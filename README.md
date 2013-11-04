@@ -4,8 +4,10 @@ wp plugin to get the latest tweet and show it with a simple function call.
 
 prerequisites:
 
-1) you have set up an app on dev.twitter.com to get your API keys and secrets
-2) your host allows `file_put_contents` and `file_get_contents` (for caching the tweet).
+1. you have set up an app on dev.twitter.com to get your API keys and secrets
+2. your host allows `file_put_contents` and `file_get_contents` (for caching the tweet).
+3. You have Abrham's twitteroauth and oauth files in a folder with this file installed in `wp-plugins`
+4. I muight package it up for you at some point
 
 
 to use:
