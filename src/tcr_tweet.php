@@ -9,6 +9,7 @@ Author: The Cellar Room Limited
 Author URI: http://www.thecellarroom.net
 Copyright (c) 2013 The Cellar Room Limited
 */
+include_once('twitteroauth.php');
 
 function writeLinks($tweet){
 	
