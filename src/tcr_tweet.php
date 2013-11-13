@@ -9,53 +9,83 @@ Author: The Cellar Room Limited
 Author URI: http://www.thecellarroom.net
 Copyright (c) 2013 The Cellar Room Limited
 */
-include_once('twitteroauth.php');
 
 function writeLinks($tweet){
 	
-	//for links
-	$tweet = preg_replace('!http://([a-zA-Z0-9./-]+[a-zA-Z0-9/-])!i', '<a href="\\0" target="_blank">\\0</a>', $tweet);
+	//for http links
+	$tweet = preg_replace('!http://([a-zA-Z0-9./-]+[a-zA-Z0-9/-])!i', ' <a href="\\0" target="_blank">\\0</a> ', $tweet);
+	
+	// for https links because my regex is lame.
+	$tweet = preg_replace('!https://([a-zA-Z0-9./-]+[a-zA-Z0-9/-])!i', ' <a href="\\0" target="_blank">\\0</a> ', $tweet);
+		
+	//for hashtags
+	$tweet = preg_replace("/#([a-z_0-9]+)/i", "<a href=\"http://twitter.com/search/$1\">$0</a>", $tweet);
 	
 	//for mentions
-	$tweet = preg_replace("/\B[@]([a-zA-Z0-9_]{1,20})/i", '<a target="_blank" class="twtr-atreply" href="http://twitter.com/$1">@$1</a>',$tweet);
+	$tweet = preg_replace("/\B[@]([a-zA-Z0-9_]{1,20})/i", ' <a target="_blank" class="twtr-atreply" href="http://twitter.com/$1">@$1</a> ',$tweet);
 	
-	//for hashtags
-	$tweet = preg_replace("/(^|\s+)#(\w+)/i", '<a target="_blank" class="twtr-hashtag" href="http://twitter.com/search\?q=%23$1>#$1</a>', $tweet);
-		
+
 	// the order of the regexes is very imporant.
 	return $tweet;
 	
 }
 
 
+function fetchTweet() {
+	
+	require_once 'twitteroauth.php';
+	$consumerKey 		= '0';
+	$consumerSecret 	= '0';
+	$accessToken 		= '0-0';
+	$accessTokenSecret = '0';	
+	
+	$connection = new TwitterOAuth($consumerKey,$consumerSecret,$accessToken,$accessTokenSecret);
+	$statuses = $connection->get('statuses/home_timeline', array('count' => 1, 'include_rts' => false, 'exclude_replies' => true ));
+	
+	foreach($statuses as $status):
+	$twitter_result = $status->text;
+	endforeach;
+
+	cacheTweet($twitter_result);
+	return $twitter_result;
+}
+
+
+function cacheTweet($twitter_result) {
+	$file	= 'wp-content/plugins/tcr_tweet/twitter_result.txt';
+	$data = array ('twitter_result' => $twitter_result, 'timestamp' => time());
+	file_put_contents($file, serialize($data));
+}
+
+
 function getTweet() {
 
- $consumerKey 		= 'x';
- $consumerSecret 	= 'x';
- $accessToken 		= 'x';
- $accessTokenSecret = 'x';
+	
+			if (file_exists($file)) {
+				$data = unserialize(file_get_contents($file));
+				if ($data['timestamp'] < time() - (15 * 60)) {
+						
+						// there is a cached tweet
+						$length = $data['twitter_result'];
+						
+						// but does file have content?
+						if ($length.length > 0 ) { 
+								// tweet exists
+								$tweet_result = $length; 
+						} else {
+							
+							// tweet is missing 
+							$twitter_result=fetchTweet();
+						}
 
-require_once 'twitteroauth.php';
-
-$connection = new TwitterOAuth($consumerKey,$consumerSecret,$accessToken,$accessTokenSecret);
-$statuses = $connection->get('statuses/home_timeline', array('count' => 1));
-
-foreach($statuses as $status): $tweet = $status->text; endforeach;
-
-			if (file_exists('twitter_result.txt')) {
-				$data = unserialize(file_get_contents('twitter_result.txt'));
-				if ($data['timestamp'] > time() - 15 * 60) {
-					$twitter_result = $data['twitter_result'];
+				} else {
+						// tweet has expired
+						$twitter_result=fetchTweet();
 				}
+			} else {
+				 	// file does not exist
+					$twitter_result=fetchTweet();
 			}
-			
-			if (!$twitter_result) { // cache doesn't exist or is older than 10 mins
-				$twitter_result = $tweet;
-			
-				$data = array ('twitter_result' => $twitter_result, 'timestamp' => time());
-				file_put_contents('twitter_result.txt', serialize($data));
-			}
-			
 
  print writeLinks($twitter_result);	
 }
