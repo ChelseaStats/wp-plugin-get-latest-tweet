@@ -46,21 +46,17 @@ function fetchTweet() {
 	$twitter_result = $status->text;
 	endforeach;
 
-	cacheTweet($twitter_result);
-	return $twitter_result;
-}
-
-
-function cacheTweet($twitter_result) {
 	$file	= 'wp-content/plugins/tcr_tweet/twitter_result.txt';
 	$data = array ('twitter_result' => $twitter_result, 'timestamp' => time());
 	file_put_contents($file, serialize($data));
+
+	return $twitter_result;
 }
 
 
 function getTweet() {
 
-	
+			$file	= 'wp-content/plugins/tcr_tweet/twitter_result.txt';
 			if (file_exists($file)) {
 				$data = unserialize(file_get_contents($file));
 				if ($data['timestamp'] < time() - (15 * 60)) {
