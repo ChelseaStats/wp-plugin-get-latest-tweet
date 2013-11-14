@@ -37,52 +37,52 @@ function fetchTweet() {
 	$consumerKey 		= '0';
 	$consumerSecret 	= '0';
 	$accessToken 		= '0-0';
-	$accessTokenSecret = '0';	
+	$accessTokenSecret  = '0';	
 	
 	$connection = new TwitterOAuth($consumerKey,$consumerSecret,$accessToken,$accessTokenSecret);
-	$statuses = $connection->get('statuses/home_timeline', array('count' => 1, 'include_rts' => false, 'exclude_replies' => true ));
+	$statuses = $connection->get('statuses/home_timeline', array('count' => 1, 'include_rts' => false, 'exclude_replies' => true) );
 	
 	foreach($statuses as $status):
-	$twitter_result = $status->text;
+	$tweet = $status->text;
 	endforeach;
 
-	$file	= 'wp-content/plugins/tcr_tweet/twitter_result.txt';
-	$data = array ('twitter_result' => $twitter_result, 'timestamp' => time());
+	$file	= 'wp-content/plugins/tcr_tweet/tweet.txt';
+	$data = array ('tweet' => $tweet, 'timestamp' => time());
 	file_put_contents($file, serialize($data));
 
-	return $twitter_result;
+	return $tweet;
+}
+
+
+function getTimecomp () {
+	
+ 	return intval(time() - (15 * 60));
 }
 
 
 function getTweet() {
 
-			$file	= 'wp-content/plugins/tcr_tweet/twitter_result.txt';
+			$file	= 'wp-content/plugins/tcr_tweet/tweet.txt';
 			if (file_exists($file)) {
+				
 				$data = unserialize(file_get_contents($file));
-				if ($data['timestamp'] < time() - (15 * 60)) {
-						
-						// there is a cached tweet
-						$length = $data['twitter_result'];
-						
-						// but does file have content?
-						if ($length.length > 0 ) { 
-								// tweet exists
-								$tweet_result = $length; 
-						} else {
-							
-							// tweet is missing 
-							$twitter_result=fetchTweet();
-						}
 
-				} else {
-						// tweet has expired
-						$twitter_result=fetchTweet();
-				}
-			} else {
+					if ( ($data['timestamp'] - getTimecomp()) > 0 ) {
+						
+							// there is a cached tweet
+							$tweet = '<span class="cached">'. $data['tweet'].'</span>';
+	
+					} else {
+							// tweet has expired or is missing
+							$tweet = '<span class="expired">'.fetchTweet().'</span>';
+					}
+					
+			}
+			 else {
 				 	// file does not exist
-					$twitter_result=fetchTweet();
+					$tweet = '<span class="new">'.fetchTweet().'</span>';
 			}
 
- print writeLinks($twitter_result);	
+ print writeLinks($tweet);	
 }
 ?>
