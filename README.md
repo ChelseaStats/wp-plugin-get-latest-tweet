@@ -16,7 +16,7 @@ to use:
     getTweet(); 
     }
     else { 
-    print 'Did you know you can follow Hediip on twitter @youraccount'; 
+    print 'Did you know you can follow us on twitter @youraccount'; 
     } 
     ?>
 
