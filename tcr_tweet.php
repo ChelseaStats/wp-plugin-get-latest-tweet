@@ -25,7 +25,7 @@ function writeLinks($tweet){
 	$tweet = preg_replace("/\B[@]([a-zA-Z0-9_]{1,20})/i", ' <a target="_blank" class="twtr-atreply" href="http://twitter.com/$1">@$1</a> ',$tweet);
 	
 
-	// the order of the regexes is very imporant.
+	// the order of the regexes is very important.
 	return $tweet;
 	
 }
@@ -85,4 +85,4 @@ function getTweet() {
 
  print writeLinks($tweet);	
 }
-?>
+
